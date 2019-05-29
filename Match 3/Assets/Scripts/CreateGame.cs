@@ -93,15 +93,100 @@ public class CreateGame : MonoBehaviour {
 
 
 			if (tile1 && tile2) {
-				Vector3 tempPos = tile1.transform.position;
-				tile1.transform.position = tile2.transform.position;
-				tile2.transform.position = tempPos;
 
-				tile1 = null;
-				tile2 = null;
+				int horzDist = (int)Mathf.Abs (tile1.transform.position.x - tile2.transform.position.x);
+				int verDist = (int)Mathf.Abs (tile1.transform.position.y - tile2.transform.position.y);
+
+				if (horzDist == 1 ^ verDist == 1) {
+
+					Tile temp = tiles [(int)tile1.transform.position.x, (int)tile1.transform.position.y];
+					tiles [(int)tile1.transform.position.x, (int)tile1.transform.position.y] = tiles [(int)tile2.transform.position.x, (int)tile2.transform.position.y];
+					tiles [(int)tile2.transform.position.x, (int)tile2.transform.position.y] = temp;
+
+					Vector3 tempPos = tile1.transform.position;
+					tile1.transform.position = tile2.transform.position;
+					tile2.transform.position = tempPos;
+
+					tile1 = null;
+					tile2 = null;
+				} else {
+					Debug.Log ("Incorrect Move");
+				}
 			}
+		}
+	}
 
+
+	void CheckGrid(){
+
+		int counter = 3;
+
+		for (int r = 0; r < rows; r++) {
+			counter = 1;
+			for (int c = 1; c < cols; c++) {
+				if (tiles [c, r] != null && tiles [c - 1, r] != null) {
+
+					if (tiles [c, r].type == tiles [c - 1, r].type) {
+						counter++;
+					} else {
+						counter = 1;
+					}
+
+					if (counter == 3) {
+						if (tiles [c, r] != null) {
+							tiles [c, r].tileObj.SetActive (false);
+						}
+						if (tiles [c - 1, r] != null) {
+							tiles [c - 1, r].tileObj.SetActive (false);
+						}
+						if (tiles [c - 2, r] != null) {
+							tiles [c - 2, r].tileObj.SetActive (false);
+						}
+						tiles [c, r] = null;
+						tiles [c - 1, r] = null;
+						tiles [c - 2, r] = null;
+						renewBoard = true;
+					}
+
+				}
+			}
+		}
+
+		for (int c = 0; c < rows; c++) {
+			counter = 1;
+			for (int r = 1; r < rows; r++) {
+				if (tiles [c, r] != null && tiles [c, r - 1] != null) {
+
+					if (tiles [c, r].type == tiles [c, r - 1].type) {
+						counter++;
+					} else {
+						counter = 1;
+					}
+
+					if (counter == 3) {
+						if (tiles [c, r] != null) {
+							tiles [c, r].tileObj.SetActive (false);
+						}
+						if (tiles [c, r - 1] != null) {
+							tiles [c, r - 1].tileObj.SetActive (false);
+						}
+						if (tiles [c, r - 2] != null) {
+							tiles [c, r - 2].tileObj.SetActive (false);
+						}
+						tiles [c, r] = null;
+						tiles [c, r - 1] = null;
+						tiles [c, r - 2] = null;
+						renewBoard = true;
+					}
+
+				}
+			}
+		}
+
+		if (renewBoard) {
+			renewBoard = false;
 		}
 
 	}
+
 }
