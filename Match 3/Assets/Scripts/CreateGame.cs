@@ -14,14 +14,14 @@ public class Tile{
 
 public class CreateGame : MonoBehaviour {
 
-	//GameObject tile1 = null;
-	//GameObject tile2 = null;
+	GameObject tile1 = null;
+	GameObject tile2 = null;
 
 	public GameObject[] tile; 
 	List<GameObject> tileBank = new List<GameObject> ();
 
 	static int rows = 8;
-	static int cols = 5;
+	static int cols = 6;
 	Tile[,] tiles = new Tile[cols,rows];
 
 	void ShuffleList(){
@@ -72,6 +72,36 @@ public class CreateGame : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+
+		if (Input.GetMouseButtonDown (0)) {
+			Debug.Log ("Pressed");
+			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit, 100)) {
+				tile1 = hit.collider.gameObject;
+				Debug.Log ("Found on press");
+			}
+
+		} else if (Input.GetMouseButtonUp (0) && tile1) {
+			Debug.Log ("Released");
+			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit, 100)) {
+				Debug.Log ("Found on release");
+				tile2 = hit.collider.gameObject;
+			}
+
+
+			if (tile1 && tile2) {
+				Vector3 tempPos = tile1.transform.position;
+				tile1.transform.position = tile2.transform.position;
+				tile2.transform.position = tempPos;
+
+				tile1 = null;
+				tile2 = null;
+			}
+
+		}
+
 	}
 }
