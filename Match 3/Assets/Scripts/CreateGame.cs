@@ -42,7 +42,7 @@ public class CreateGame : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		int numcopies = (rows * cols) / 3;
+		int numcopies = (rows * cols)/3 ;
 
 		//creating a tile buffer
 		for (int i = 0; i < numcopies; i++) {
@@ -160,7 +160,7 @@ public class CreateGame : MonoBehaviour {
 
 						int f = 0;	//f starts from c
 
-						//populate the top most tiles
+						//populate the top most tiles in different columns
 						while(f<3){
 							for (int n = 0; n < tileBank.Count; n++) {
 
@@ -185,7 +185,8 @@ public class CreateGame : MonoBehaviour {
 								
 							}
 						}
-						Invoke ("CheckGrid", 0.5f);
+
+						CheckGrid ();
  					}
 
 				}
@@ -216,17 +217,15 @@ public class CreateGame : MonoBehaviour {
 							tiles [c, r - 2].tileObj.SetActive (false);
 						}
 
-						//remove
 						tiles [c, r] = null;
 						tiles [c, r - 1] = null;
 						tiles [c, r - 2] = null;
-						//till here
 
 
 						int f = 0;
 
-						//populate the top most tiles
-						while (f < 3) {
+						//populate the top most tiles in same column
+ 						while (f < 3) {
 							for (int n = 0; n < tileBank.Count; n++) {
 
 								GameObject o = tileBank [n];
@@ -239,16 +238,22 @@ public class CreateGame : MonoBehaviour {
 
 								}
 							}
+
+
 						}
-						//reindex the remaining tiles
 
 						int j = r;
 						while (j < rows - 1) {
-								tiles [c, j] = tiles [c, j + 1];
-								j++;
-							
+							tiles [c, j] = tiles [c, j + 1];
+							j++;
+
 						}
-						Invoke ("CheckGrid", 0.5f);
+
+						 
+						//reindex the remaining tiles
+					
+						CheckGrid ();
+
 					}
 
 				}
