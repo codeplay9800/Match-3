@@ -22,6 +22,7 @@ public class CreateGame : MonoBehaviour {
 
 	static int rows = 8;
 	static int cols = 6;
+	bool renewBoard = false;
 	Tile[,] tiles = new Tile[cols,rows];
 
 	void ShuffleList(){
@@ -73,6 +74,8 @@ public class CreateGame : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		CheckGrid ();
+
 		if (Input.GetMouseButtonDown (0)) {
 			Debug.Log ("Pressed");
 			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
@@ -119,7 +122,7 @@ public class CreateGame : MonoBehaviour {
 
 	void CheckGrid(){
 
-		int counter = 3;
+		int counter = 1;
 
 		for (int r = 0; r < rows; r++) {
 			counter = 1;
@@ -152,7 +155,7 @@ public class CreateGame : MonoBehaviour {
 			}
 		}
 
-		for (int c = 0; c < rows; c++) {
+		for (int c = 0; c < cols; c++) {
 			counter = 1;
 			for (int r = 1; r < rows; r++) {
 				if (tiles [c, r] != null && tiles [c, r - 1] != null) {
@@ -184,7 +187,52 @@ public class CreateGame : MonoBehaviour {
 		}
 
 		if (renewBoard) {
+			RenewGrid ();
 			renewBoard = false;
+		}
+
+	}
+
+
+	void RenewGrid(){
+
+		bool anyMoved = false;
+		ShuffleList ();
+		for (int r = 1; r < rows; r++) {
+
+			for (int c = 0; c < cols; c++) {
+
+				if (r == rows - 1 && tiles [c, r] == null) {
+
+					Vector3 tilePos = new Vector3 (c, r, 0);
+					for (int n = 0; n < tileBank.Count; n++) {
+
+						GameObject o = tileBank [n];
+						if (!o.activeSelf) {
+							o.transform.position = new Vector3 (tilePos.x, tilePos.y, tilePos.z);
+							o.SetActive (true);
+							tiles [c, r] = new Tile (o, o.name);
+							n = tileBank.Count + 1;
+						}
+					}
+				}
+
+				if (tiles [c, r] != null) {
+
+					if (tiles [c, r - 1] == null) {
+						tiles [c, r - 1] = tiles [c, r];
+						tiles [c, r - 1].tileObj.transform.position = new Vector3 (c, r - 1, 0);
+						tiles [c, r] = null;
+						anyMoved = true;
+					}
+
+				}
+
+			}
+		}
+
+		if (anyMoved) {
+			Invoke ("RenewGrid", 0.5f);
 		}
 
 	}
