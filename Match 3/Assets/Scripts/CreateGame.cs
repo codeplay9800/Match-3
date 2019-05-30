@@ -20,7 +20,9 @@ public class CreateGame : MonoBehaviour {
 	GameObject tile2 = null;
 
 	public GameObject[] tile; 
-	List<GameObject> tileBank = new List<GameObject> ();
+	List<GameObject> tileBank = new List<GameObject> (); // Buffer For Tiles of size R*C*2. I have negated the cost for instantiating objects
+	// by placing all the tiles in a buffer which will be spawned again from the buffer itself. 
+	//The buffer contains Tiles in ratio of 50% Red, 30% Green and 20% blue.
 	public GameObject endScreen;
 
 	static int rows = 8;
@@ -152,8 +154,7 @@ public class CreateGame : MonoBehaviour {
 			}
 		}
 	}
-
-
+// CheckGrid(): Checks the current state of the board. If there are any match 3 found they are updated calling RenewGrid.    
 	void CheckGrid(){
 
 		int counter = 1;
@@ -228,7 +229,7 @@ public class CreateGame : MonoBehaviour {
 
 	}
 
-
+// RenewGrid(): Spawns new tiles from the buffer.
 	void RenewGrid(){
 
 		bool anyMoved = false;
