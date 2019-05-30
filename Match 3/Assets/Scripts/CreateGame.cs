@@ -22,7 +22,7 @@ public class CreateGame : MonoBehaviour {
 
 	static int rows = 9;
 	static int cols = 6;
-	//bool renewBoard = false;
+	bool renewBoard = false;
 	Tile[,] tiles = new Tile[cols,rows];
 
 	void ShuffleList(){
@@ -42,7 +42,7 @@ public class CreateGame : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		int numcopies = (rows * cols)/3 ;
+		int numcopies = (rows * cols);
 
 		//creating a tile buffer
 		for (int i = 0; i < numcopies; i++) {
@@ -72,13 +72,12 @@ public class CreateGame : MonoBehaviour {
 				}
 			}
 		}
-
-		CheckGrid ();
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 
+		CheckGrid ();
 
 		if (Input.GetMouseButtonDown (0)) {
 			Debug.Log ("Pressed");
@@ -119,7 +118,6 @@ public class CreateGame : MonoBehaviour {
 				} else {
 					Debug.Log ("Incorrect Move");
 				}
-				CheckGrid ();
 			}
 		}
 	}
@@ -140,8 +138,6 @@ public class CreateGame : MonoBehaviour {
 						counter = 1;
 					}
 
-
-				
 					if (counter == 3) {
 						if (tiles [c, r] != null) {
 							tiles [c, r].tileObj.SetActive (false);
@@ -152,42 +148,11 @@ public class CreateGame : MonoBehaviour {
 						if (tiles [c - 2, r] != null) {
 							tiles [c - 2, r].tileObj.SetActive (false);
 						}
-
 						tiles [c, r] = null;
 						tiles [c - 1, r] = null;
 						tiles [c - 2, r] = null;
-
-
-						int f = 0;	//f starts from c
-
-						//populate the top most tiles in different columns
-						while(f<3){
-							for (int n = 0; n < tileBank.Count; n++) {
-
-								GameObject o = tileBank [n];
-								if (!o.activeSelf) {
-									o.transform.position = new Vector3 (c - f, rows + 1, 0);	//set pos
-									o.SetActive (true);
-									tiles [c - f, rows - 1] = new Tile (o, o.name);
-									n = tileBank.Count + 1;
-									f++;
-
-								}
-							}
-						}
-						//reindex the remaining tiles
-
-						for (int i = 2; i >= 0; i--) {
-							int j = r;
-							while (j < rows - 1) {
-									tiles [c - i, j] = tiles [c - i, j + 1];
-									j++;
-								
-							}
-						}
-
-						CheckGrid ();
- 					}
+						renewBoard = true;
+					}
 
 				}
 			}
@@ -205,8 +170,6 @@ public class CreateGame : MonoBehaviour {
 					}
 
 					if (counter == 3) {
-
-						//spawn 3 at (c, max)
 						if (tiles [c, r] != null) {
 							tiles [c, r].tileObj.SetActive (false);
 						}
@@ -216,48 +179,63 @@ public class CreateGame : MonoBehaviour {
 						if (tiles [c, r - 2] != null) {
 							tiles [c, r - 2].tileObj.SetActive (false);
 						}
-
 						tiles [c, r] = null;
 						tiles [c, r - 1] = null;
 						tiles [c, r - 2] = null;
-
-
-						int f = 0;
-
-						//populate the top most tiles in same column
- 						while (f < 3) {
-							for (int n = 0; n < tileBank.Count; n++) {
-
-								GameObject o = tileBank [n];
-								if (!o.activeSelf) {
-									o.transform.position = new Vector3 (c, rows + f, 0);	//set pos
- 									o.SetActive (true);
-									tiles [c, rows - 3 + f] = new Tile (o, o.name);
-									n = tileBank.Count + 1;
-									f++;
-
-								}
-							}
-
-
-						}
-
-						int j = r;
-						while (j < rows - 1) {
-							tiles [c, j] = tiles [c, j + 1];
-							j++;
-
-						}
-
-						 
-						//reindex the remaining tiles
-					
-						CheckGrid ();
-
+						renewBoard = true;
 					}
 
 				}
 			}
+		}
+
+		if (renewBoard) {
+			RenewGrid ();
+			renewBoard = false;
+		}
+
+	}
+
+
+	void RenewGrid(){
+
+		bool anyMoved = false;
+		ShuffleList ();
+		for (int r = 1; r < rows; r++) {
+
+			for (int c = 0; c < cols; c++) {
+
+				if (r == rows - 1 && tiles [c, r] == null) {
+
+					Vector3 tilePos = new Vector3 (c, r, 0);
+					for (int n = 0; n < tileBank.Count; n++) {
+
+						GameObject o = tileBank [n];
+						if (!o.activeSelf) {
+							o.transform.position = new Vector3 (tilePos.x, tilePos.y, tilePos.z);
+							o.SetActive (true);
+							tiles [c, r] = new Tile (o, o.name);
+							n = tileBank.Count + 1;
+						}
+					}
+				}
+
+				if (tiles [c, r] != null) {
+
+					if (tiles [c, r - 1] == null) {
+						tiles [c, r - 1] = tiles [c, r];
+						tiles [c, r - 1].tileObj.transform.position = new Vector3 (c, r - 1, 0);
+						tiles [c, r] = null;
+						anyMoved = true;
+					}
+
+				}
+
+			}
+		}
+
+		if (anyMoved) {
+			Invoke ("RenewGrid", 1f);
 		}
 
 	}
