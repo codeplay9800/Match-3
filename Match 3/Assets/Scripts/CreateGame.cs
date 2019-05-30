@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Tile{
 
@@ -19,11 +21,18 @@ public class CreateGame : MonoBehaviour {
 
 	public GameObject[] tile; 
 	List<GameObject> tileBank = new List<GameObject> ();
+	public GameObject endScreen;
 
-	static int rows = 9;
-	static int cols = 6;
+	static int rows = 8;
+	static int cols = 5;
 	bool renewBoard = false;
 	Tile[,] tiles = new Tile[cols,rows];
+	bool temp = false;
+
+	public int possibleMoves = 10; 
+ 	public Button bRestart;
+	public Button bQuit;
+ 	public Text movesText;
 
 	void ShuffleList(){
 		System.Random rand = new System.Random ();
@@ -38,11 +47,23 @@ public class CreateGame : MonoBehaviour {
 		}
 	}
 
+	void Restart(){
+		SceneManager.LoadScene (0);
+	}
+
+	void End(){
+		Application.Quit ();
+	}
 
 	// Use this for initialization
 	void Start () {
 
-		int numcopies = (rows * cols);
+		movesText.text = "Available Moves: " + possibleMoves;
+		endScreen.SetActive (false);
+		int numcopies = (rows * cols)*2;
+
+		bRestart.onClick.AddListener (Restart);
+		bQuit.onClick.AddListener (End);
 
 		//creating a tile buffer
 		for (int i = 0; i < numcopies; i++) {
@@ -76,48 +97,58 @@ public class CreateGame : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+		if (possibleMoves > 0) {
+			CheckGrid ();
 
-		CheckGrid ();
-
-		if (Input.GetMouseButtonDown (0)) {
-			Debug.Log ("Pressed");
-			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit, 100)) {
-				tile1 = hit.collider.gameObject;
-				Debug.Log ("Found on press");
-			}
-
-		} else if (Input.GetMouseButtonUp (0) && tile1) {
-			Debug.Log ("Released");
-			Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit, 100)) {
-				Debug.Log ("Found on release");
-				tile2 = hit.collider.gameObject;
-			}
-
-
-			if (tile1 && tile2) {
-
-				int horzDist = (int)Mathf.Abs (tile1.transform.position.x - tile2.transform.position.x);
-				int verDist = (int)Mathf.Abs (tile1.transform.position.y - tile2.transform.position.y);
-
-				if (horzDist == 1 ^ verDist == 1) {
-
-					Tile temp = tiles [(int)tile1.transform.position.x, (int)tile1.transform.position.y];
-					tiles [(int)tile1.transform.position.x, (int)tile1.transform.position.y] = tiles [(int)tile2.transform.position.x, (int)tile2.transform.position.y];
-					tiles [(int)tile2.transform.position.x, (int)tile2.transform.position.y] = temp;
-
-					Vector3 tempPos = tile1.transform.position;
-					tile1.transform.position = tile2.transform.position;
-					tile2.transform.position = tempPos;
-
-					tile1 = null;
-					tile2 = null;
-				} else {
-					Debug.Log ("Incorrect Move");
+			if (Input.GetMouseButtonDown (0)) {
+				Debug.Log ("Pressed");
+				Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+				RaycastHit hit;
+				if (Physics.Raycast (ray, out hit, 100)) {
+					tile1 = hit.collider.gameObject;
+					Debug.Log ("Found on press");
 				}
+
+			} else if (Input.GetMouseButtonUp (0) && tile1) {
+				Debug.Log ("Released");
+				Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+				RaycastHit hit;
+				if (Physics.Raycast (ray, out hit, 100)) {
+					Debug.Log ("Found on release");
+					tile2 = hit.collider.gameObject;
+				}
+
+
+				if (tile1 && tile2) {
+
+					int horzDist = (int)Mathf.Abs (tile1.transform.position.x - tile2.transform.position.x);
+					int verDist = (int)Mathf.Abs (tile1.transform.position.y - tile2.transform.position.y);
+
+					if (horzDist == 1 ^ verDist == 1) {
+
+						Tile temp = tiles [(int)tile1.transform.position.x, (int)tile1.transform.position.y];
+						tiles [(int)tile1.transform.position.x, (int)tile1.transform.position.y] = tiles [(int)tile2.transform.position.x, (int)tile2.transform.position.y];
+						tiles [(int)tile2.transform.position.x, (int)tile2.transform.position.y] = temp;
+
+						Vector3 tempPos = tile1.transform.position;
+						tile1.transform.position = tile2.transform.position;
+						tile2.transform.position = tempPos;
+
+						tile1 = null;
+						tile2 = null;
+
+						possibleMoves--;
+						movesText.text = "Moves: " + possibleMoves;
+
+					} else {
+						Debug.Log ("Incorrect Move");
+					}
+				}
+			}
+		} else {
+			if (!temp) {
+				CheckGrid ();
+				temp = true;
 			}
 		}
 	}
@@ -183,7 +214,8 @@ public class CreateGame : MonoBehaviour {
 						tiles [c, r - 1] = null;
 						tiles [c, r - 2] = null;
 						renewBoard = true;
-					}
+
+  					}
 
 				}
 			}
@@ -192,7 +224,7 @@ public class CreateGame : MonoBehaviour {
 		if (renewBoard) {
 			RenewGrid ();
 			renewBoard = false;
-		}
+		} 
 
 	}
 
@@ -227,7 +259,8 @@ public class CreateGame : MonoBehaviour {
 						tiles [c, r - 1].tileObj.transform.position = new Vector3 (c, r - 1, 0);
 						tiles [c, r] = null;
 						anyMoved = true;
-					}
+
+  					}
 
 				}
 
@@ -236,6 +269,11 @@ public class CreateGame : MonoBehaviour {
 
 		if (anyMoved) {
 			Invoke ("RenewGrid", 1f);
+		} else {
+			if (possibleMoves < 1) {
+				endScreen.SetActive (true);
+				Debug.Log ("END");
+			}
 		}
 
 	}
